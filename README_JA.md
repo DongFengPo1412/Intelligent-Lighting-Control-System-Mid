@@ -90,7 +90,7 @@ graph TD
 
 ### 4.1 複合マトリクス空間トポロジーの閉形式解法 (Spatial Topology Mapping)
 
-物理マトリクスは 4 枚の $8 \times 8$ パネルを $2 \times 2$ 配置で直列カスケード接続し、$16 \times 16$ グリッド（計 256 個）を構成しています。通常の2次元ルックアップテーブル（LUT）方式では SRAM を 256 バイト消費します。本システムでは `DisplayManager.h` において**純粋な数学的閉形式変換モデル**を導出しました：
+物理マトリクスは 4 枚の $8 \times 8$ パネルを $2 \times 2$ 配置で直列カスケード接続し、 $16 \times 16$ グリッド（計 256 個）を構成しています。通常の2次元ルックアップテーブル（LUT）方式では SRAM を 256 バイト消費します。本システムでは `DisplayManager.h` において**純粋な数学的閉形式変換モデル**を導出しました：
 
 $$\text{blockID}(x, y) = \left\lfloor \frac{y}{8} \right\rfloor \times 2 + \left\lfloor \frac{x}{8} \right\rfloor$$
 
@@ -135,7 +135,7 @@ graph LR
   $$\text{fall}_i(t) = \text{fall}_i(t-1) - \Big(0.4 + 0.05 \times \text{fall}_i(t-1)\Big)$$
 - **接地時瞬時ゼロリセット（Ground Snapping）**：
   $$\text{if } \text{fall}_i(t) < \text{band}_i(t) + 0.2 \quad \text{and} \quad \text{band}_i(t) \le 2 \implies \text{fall}_i(t) = 0$$
-- **物理 Y 軸反転とヒートマップ色変化**：$15 - y$ による逆算インデックスを用い、光柱を最下部（3・4番パネル）から上方向へ成長させ、暖色オレンジから頂点の寒色ブルーバイオレットへと遷移。低音ビート検出時（`beat == 1`）は全画面に白色フラッシュを重畳。
+- **物理 Y 軸反転とヒートマップ色変化**： $15 - y$ による逆算インデックスを用い、光柱を最下部（3・4番パネル）から上方向へ成長させ、暖色オレンジから頂点の寒色ブルーバイオレットへと遷移。低音ビート検出時（`beat == 1`）は全画面に白色フラッシュを重畳。
 
 ---
 
