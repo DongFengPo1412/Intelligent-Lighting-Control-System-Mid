@@ -16,9 +16,11 @@
 [![Bilibili: Live Demo](https://img.shields.io/badge/Bilibili-Live%20Demo-fb7299.svg?logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV192GR6kEHy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 💡 **项目工程定位**  
-> 本系统是一套面向高实时性、多模态感官联动的**异构嵌入式分布式光影交互终端**。系统采用 **“双单片机非对称硬件调度 + 边缘 Linux AI 视觉协同”** 架构，将多模态感知（大模型语音、24kHz 对数 FFT 音频流、MediaPipe 21 点骨骼手势、LBPH 人脸识别）与 60FPS 硬实时光影渲染彻底解耦，实现了零查表空间拓扑解算、仿生重力阻尼音频随动滤波、全防御防偷袭串口状态机以及独立运行的经典点阵游戏引擎。  
-> 🔗 **下一代具身单芯片架构演进**：[Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)（单芯片 ESP32-S3 归一化重构与具身多模态架构）
+> 💡 **项目工程定位与系列演进**  
+> 本系统是**智能光影交互系统三部曲之【中阶进阶】**，面向高实时性、多模态感官联动的**异构嵌入式分布式光影交互终端**。系统采用 **“双单片机非对称硬件调度 + 边缘 Linux AI 视觉协同”** 架构，将多模态感知（大模型语音、24kHz 对数 FFT 音频流、MediaPipe 21 点骨骼手势、LBPH 人脸识别）与 60FPS 硬实时光影渲染彻底解耦，实现了零查表空间拓扑解算、仿生重力阻尼音频随动滤波、全防御防偷袭串口状态机以及独立运行的经典点阵游戏引擎。  
+> 🔗 **三部曲成长轨迹**：  
+> - ⏪ **初阶基石归档**：[Intelligent-Lighting-Control-System-Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic)（ASRPRO 离线端侧语音 + 基础点阵声光物理原型）  
+> - ⏩ **下一代高阶演进**：[Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)（单芯片 ESP32-S3 原生 RMT 驱动归一化重构 + 本地大模型具身 Agent）
 
 ---
 

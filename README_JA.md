@@ -16,9 +16,11 @@
 [![Bilibili: Live Demo](https://img.shields.io/badge/Bilibili-Live%20Demo-fb7299.svg?logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV192GR6kEHy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 💡 **プロジェクト工学的位置づけ**  
-> 本システムは、極小レイテンシとマルチモーダル感覚連動を追求した**異種組込み分散型光影インタラクティブ端末**です。**「デュアルマイコン非対称ハードウェアスケジューリング＋エッジLinux AIビジョン協調」**アーキテクチャを採用し、マルチモーダル知覚（LLM音声対話、24kHz対数FFT音響ストリーム、MediaPipe 21点骨格ジェスチャ、LBPH顔認識）と 60FPS ハードリアルタイム光影レンダリングを完全分離・疎結合化しました。テーブル引きゼロの閉形式空間トポロジー変換、生体模倣重力減衰音響追従フィルタ、衝突回避シリアル状態機械防壁、および独立動作するレトロアーケードゲームエンジンを実装しています。  
-> 🔗 **次世代身体性シングルチップアーキテクチャへの進化**：[Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)（ESP32-S3 単一チップ統合および身体性マルチモーダル構成）
+> 💡 **プロジェクト工学的位置づけと3部作の進化系譜**  
+> 本システムは、極小レイテンシとマルチモーダル感覚連動を追求した**スマート光影インタラクティブ3部作の【中級・進階フェーズ】**です。**「デュアルマイコン非対称ハードウェアスケジューリング＋エッジLinux AIビジョン協調」**アーキテクチャを採用し、マルチモーダル知覚（LLM音声対話、24kHz対数FFT音響ストリーム、MediaPipe 21点骨格ジェスチャ、LBPH顔認識）と 60FPS ハードリアルタイム光影レンダリングを完全分離・疎結合化しました。テーブル引きゼロの閉形式空間トポロジー変換、生体模倣重力減衰音響追従フィルタ、衝突回避シリアル状態機械防壁、および独立動作するレトロアーケードゲームエンジンを実装しています。  
+> 🔗 **3部作の進化系譜**：  
+> - ⏪ **初級・基盤アーカイブ**：[Intelligent-Lighting-Control-System-Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic)（ASRPRO オフライン音声とマトリクス物理プロトタイプ）  
+> - ⏩ **次世代上位への進化**：[Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)（単一ESP32-S3チップ統合および身体性マルチモーダル構成）
 
 ---
 

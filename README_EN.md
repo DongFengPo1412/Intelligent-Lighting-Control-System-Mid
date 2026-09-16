@@ -16,9 +16,11 @@
 [![Bilibili: Live Demo](https://img.shields.io/badge/Bilibili-Live%20Demo-fb7299.svg?logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV192GR6kEHy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 💡 **System Engineering Positioning**  
-> This project implements a **distributed heterogeneous embedded lighting and acoustic interaction system** engineered for low latency and multimodal sensory coupling. Utilizing an **asymmetric dual-MCU scheduling + edge Linux AI vision coprocessor** architecture, the system cleanly decouples multimodal perception (LLM voice dialogue, 24kHz logarithmic FFT audio streaming, MediaPipe 21-keypoint skeletal tracking, and LBPH facial recognition) from 60FPS hard real-time photonic rendering. Core engineering features include closed-form spatial topology mapping with zero lookup tables, a physics-damped gravity fallback audio filter, an anti-collision serial state machine, and standalone retro arcade game engines.  
-> 🔗 **Next-Gen Embodied Single-MCU Evolution**: [Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro) (Unified ESP32-S3 Single-Chip Architecture with Multimodal Embodiment)
+> 💡 **System Engineering Positioning & Trilogy Evolution**  
+> This project represents the **Mid-Stage Intermediate Evolution** in the **Intelligent Audio-Visual Lighting Interactive Trilogy**, engineered as a **distributed heterogeneous embedded lighting and acoustic interaction system** for low latency and multimodal sensory coupling. Utilizing an **asymmetric dual-MCU scheduling + edge Linux AI vision coprocessor** architecture, the system cleanly decouples multimodal perception (LLM voice dialogue, 24kHz logarithmic FFT audio streaming, MediaPipe 21-keypoint skeletal tracking, and LBPH facial recognition) from 60FPS hard real-time photonic rendering. Core engineering features include closed-form spatial topology mapping with zero lookup tables, a physics-damped gravity fallback audio filter, an anti-collision serial state machine, and standalone retro arcade game engines.  
+> 🔗 **Trilogy Evolution Hierarchy**:  
+> - ⏪ **Foundational Baseline Archive**: [Intelligent-Lighting-Control-System-Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic) (ASRPRO Edge AI Voice & Matrix Hardware Baseline)  
+> - ⏩ **Next-Gen Pro Evolution**: [Intelligent-Lighting-Control-System-Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro) (Unified Single-Chip ESP32-S3 Architecture with Multimodal Embodied Agent)
 
 ---
 
