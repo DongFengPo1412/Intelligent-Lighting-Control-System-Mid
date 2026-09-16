@@ -13,6 +13,7 @@
 [![Edge AI: Jetson Nano](https://img.shields.io/badge/Edge%20AI-NVIDIA%20Jetson%20Nano-76B900.svg)](https://developer.nvidia.com/embedded/jetson-nano)
 [![Rendering: FastLED 60FPS](https://img.shields.io/badge/Rendering-FastLED%2060FPS-orange.svg)](https://fastled.io/)
 [![UART: 115200 8N1](https://img.shields.io/badge/UART%20Latency-1.12ms-brightgreen.svg)]()
+[![Bilibili: Live Demo](https://img.shields.io/badge/Bilibili-Live%20Demo-fb7299.svg?logo=bilibili&logoColor=white)](https://www.bilibili.com/video/BV192GR6kEHy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > 💡 **项目工程定位**  
