@@ -21,7 +21,7 @@
 | 游戏与手机 | [GameEngine.h](../esp32-wroom-32-arduino/GameEngine.h)、[BlinkerManager.h](../esp32-wroom-32-arduino/BlinkerManager.h) | 贪吃蛇、俄罗斯方块、两位计分与六按钮控制。 |
 | 视觉 | [run_gesture2.py](../jetson-nano-py36/run_gesture2.py)、[face_system_cn.py](../jetson-nano-py36/face_system_cn.py) | 特定手势和可登记人脸的独立程序，输出 UART 模式编号。 |
 
-审计基线为本地提交 `f9419ba`，它在此前远程 `4dcabf9` 之后修改了面板映射，新增 `MatrixLayout.h`。提交记录明确尚未编译、烧录、实测或推送。课程图片和桌面 `LightSystem3` 副本仍是四块 8×8 版本；当前文档描述新映射，并保留历史展示的版本说明。
+审计基线为本地提交 `f9419ba`，它在此前远程 `4dcabf9` 之后修改了面板映射，新增 `MatrixLayout.h`。该提交原先保留在本地，本轮经所有者确认已随文档一起发布；仍未编译、烧录或实测。课程图片和桌面 `LightSystem3` 副本仍是四块 8×8 版本；当前文档描述新映射，并保留历史展示的版本说明。
 
 桌面 `py36` 五个 Python 脚本与仓库逐字节一致；旧 `LightSystem1/3` 的 WROOM 文件存在差异，不作为覆盖当前仓库的依据。S3 目录包含大量小智板型、示例和通用功能，不代表本样机实现了所有上游功能。子目录原有 README 是上游说明，不能代替本项目的部署条件。
 
@@ -168,7 +168,7 @@ S3 UART1 与 WROOM Serial1 均为 115200、8N1；Jetson 对 WROOM Serial2 也采
 | 静音帧字段不足 | `audio_service.cc` 静音字串只有 16 个整数，接收器要求 17；旧频带会保留并继续绘制。 | 已静态确认，需修正后实测。 |
 | 非法频带缺少范围校验 | `sscanf` 后直接保存输入，绘图循环受传入高度控制；畸形包可造成过量循环或重复底边绘制。 | 未做故障注入。 |
 | 音乐退出不同步 | S3 可先关闭音乐标记，WROOM 却因 1.2 s 保护丢弃切模；流停止时没有自动重发／超时回待机。 | 需联调；频谱停止也不继续定时衰减。 |
-| 单块面板改版 | `f9419ba` 为本地未发布的映射修改，课程图为旧拼接版。 | 未编译／烧录／实测。 |
+| 单块面板改版 | `f9419ba` 为已发布、尚未实测的映射修改，课程图为旧拼接版。 | 未编译／烧录／实测。 |
 | 旧配置模板 | `Config.example.h` 缺少当前 MatrixLayout 和功率定义，覆盖 `Config.h` 会失去所需配置。 | 按部署指南只创建私有凭证文件。 |
 | S3 引脚复用 | 本地板型 `bread-compact-wifi` 同时把 GPIO18 设为 UART RX 和 `LampController` 输出。 | 核对实际板型并解决复用后再测；本轮不改源码。 |
 | 依赖与资源 | 当前 manifest 要求 IDF>=5.5.2，旧文档写 5.4；sdkconfig、lock 与 managed_components 未跟踪。 | 不能保证干净克隆直接构建。 |

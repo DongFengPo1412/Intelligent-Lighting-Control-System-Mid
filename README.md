@@ -12,7 +12,7 @@ Mid 是 **Basic → Mid → Pro** 三阶段项目的中阶课程原型，又名�
 
 ![课程样机的双 ESP32、扬声器与拼接灯板](docs/images/hardware_overview.jpg)
 
-图片记录课程时期的四块 8×8 拼接硬件，未完整展示 Jetson 节点。**当前本地源码已改为单块 16×16 逐行蛇形映射；该改版尚无编译、烧录或实测记录，不能用旧图片证明改版已验证。** [版本与验证范围](docs/technical-notes.zh-CN.md#implementation-status)
+图片记录课程时期的四块 8×8 拼接硬件，未完整展示 Jetson 节点。**当前仓库源码已改为单块 16×16 逐行蛇形映射；该改版尚无编译、烧录或实测记录，不能用旧图片证明改版已验证。** [版本与验证范围](docs/technical-notes.zh-CN.md#implementation-status)
 
 ## 系统架构
 

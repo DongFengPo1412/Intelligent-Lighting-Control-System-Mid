@@ -12,7 +12,7 @@ Building on [Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Contr
 
 ![Course prototype with two ESP32 boards, speaker, and tiled panels](docs/images/hardware_overview.jpg)
 
-The photograph records the course hardware with four 8×8 panels and does not show the complete Jetson node. **Current local source targets one row-serpentine 16×16 panel. That revision has no recorded build, flash, or hardware validation; historical photographs do not validate it.** [Version and validation scope](docs/technical-notes.en.md#implementation-status)
+The photograph records the course hardware with four 8×8 panels and does not show the complete Jetson node. **Current repository source targets one row-serpentine 16×16 panel. That revision has no recorded build, flash, or hardware validation; historical photographs do not validate it.** [Version and validation scope](docs/technical-notes.en.md#implementation-status)
 
 ## System architecture
 

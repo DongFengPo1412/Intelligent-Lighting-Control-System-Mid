@@ -21,7 +21,7 @@ These notes primarily follow current repository source. Course demonstrations, d
 | Games/phone | [GameEngine.h](../esp32-wroom-32-arduino/GameEngine.h), [BlinkerManager.h](../esp32-wroom-32-arduino/BlinkerManager.h) | Snake, Tetris, two-digit scores, six button callbacks. |
 | Vision | [run_gesture2.py](../jetson-nano-py36/run_gesture2.py), [face_system_cn.py](../jetson-nano-py36/face_system_cn.py) | Separate gesture and face-enrollment programs emitting UART mode numbers. |
 
-The audit baseline is local commit `f9419ba`, following the earlier remote `4dcabf9`. It changes panel mapping and adds `MatrixLayout.h`; its record explicitly states no build, flash, hardware test, or push. Course photographs and the desktop `LightSystem3` copy use four 8×8 panels. This documentation describes the new mapping while identifying historical demonstrations separately.
+The audit baseline is local commit `f9419ba`, following the earlier remote `4dcabf9`. It changes panel mapping and adds `MatrixLayout.h`; it was initially local-only and has now been published with this documentation following owner approval. It remains unbuilt, unflashed, and hardware-unvalidated. Course photographs and the desktop `LightSystem3` copy use four 8×8 panels. This documentation describes the new mapping while identifying historical demonstrations separately.
 
 All five desktop `py36` scripts are byte-identical to the repository. WROOM files in older `LightSystem1/3` copies differ and are not used to overwrite this version. The S3 tree contains many upstream XiaoZhi boards/examples; their presence does not establish support on this prototype. Nested upstream READMEs do not define this project's complete deployment conditions.
 
@@ -168,7 +168,7 @@ This pass statically traced calls/configuration and compared files. No hardware,
 | Short silence frame | The literal in `audio_service.cc` has only sixteen integers; the receiver requires seventeen, retaining and rendering old bands. | Statically confirmed; correction and hardware test pending. |
 | Unchecked band range | Parsed heights are stored directly and drive render-loop length; malformed frames can cause excessive work or repeated bottom-row drawing. | No fault-injection test. |
 | Unsynchronized music exit | S3 can disable analysis while WROOM rejects the switch within 1.2 s; no automatic resend/standby timeout. | Integration test needed; decay also stops when frames stop. |
-| Single-panel revision | `f9419ba` changes mapping locally; course images show tiled hardware. | Not built/flashed/hardware-tested. |
+| Single-panel revision | `f9419ba` publishes an unvalidated mapping change; course images show tiled hardware. | Not built/flashed/hardware-tested. |
 | Old configuration template | Replacing `Config.h` with `Config.example.h` loses current mapping and power definitions. | Create only the private credential file as documented. |
 | S3 pin reuse | Local `bread-compact-wifi` config assigns GPIO18 to both UART RX and a `LampController` output. | Resolve against the actual board before testing; source unchanged in this pass. |
 | Dependencies/assets | Manifest now requires IDF>=5.5.2, versus old 5.4 wording; sdkconfig, lock, and managed_components are untracked. | A clean-clone build is not guaranteed. |
