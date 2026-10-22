@@ -81,7 +81,7 @@ A valid frame requires beat plus sixteen bands after `f,`: seventeen integers. I
 Rises immediately follow input. Falls apply a fixed-plus-proportional decrement **per packet render**:
 
 ```math
-h_i'=\begin{cases}b_i,&b_i\ge h_i\\h_i-(0.4+0.05h_i),&b_i<h_i\end{cases}
+h_i'=\begin{cases}b_i,&b_i\ge h_i\\h_i-(0.4+0.05h_i),&b_i\lt h_i\end{cases}
 ```
 
 In the falling branch, if h_i'<b_i+0.2 and b_i<=2, the result becomes b_i, not necessarily zero, then is bounded below by zero. There is no velocity state or time step: this is empirical decay smoothing rather than gravity/air-resistance simulation. Drawing uses `y=0..int(h_i)` and physical row `15-y`, so even zero draws a bottom pixel. Beats add `CRGB(0,25,25)`, a cyan component rather than white flashing.
