@@ -47,10 +47,29 @@ inline void drawGameScore(int s) {
 }
 
 // --- 4. 贪吃蛇核心逻辑 ---
+static char pendingSnakeDirection = 0;
+inline void requestSnakeDirection(char direction) { pendingSnakeDirection=direction; }
+inline bool placeSnakeFood() {
+    int freeCount=0;
+    for(int i=0;i<256;++i) {
+        bool occupied=false;
+        for(int j=0;j<snakeLen;++j)if(snakeX[j]==i%16 && snakeY[j]==i/16){occupied=true;break;}
+        if(!occupied)++freeCount;
+    }
+    if(!freeCount)return false;
+    int choice=random(freeCount);
+    for(int i=0;i<256;++i) {
+        bool occupied=false;
+        for(int j=0;j<snakeLen;++j)if(snakeX[j]==i%16 && snakeY[j]==i/16){occupied=true;break;}
+        if(!occupied && choice--==0){foodX=i%16;foodY=i/16;return true;}
+    }
+    return false;
+}
 inline void initSnake() {
     snakeLen = 3; snakeScore = 0; sDx = 1; sDy = 0; snakeSpeed = 450;
     for(int i=0; i<3; i++) { snakeX[i] = 5-i; snakeY[i] = 7; }
-    foodX = random(16); foodY = random(16);
+    pendingSnakeDirection=0;
+    placeSnakeFood();
     lastSnakeUpdate = millis(); 
     snakeStarted = true;
 }
@@ -59,6 +78,12 @@ inline void runSnake() {
     if(!snakeStarted) return;
     if(millis() - lastSnakeUpdate > (unsigned long)snakeSpeed) {
         lastSnakeUpdate = millis();
+        char direction=pendingSnakeDirection;pendingSnakeDirection=0;
+        if(direction=='W' && sDy!=1){sDx=0;sDy=-1;}
+        else if(direction=='S' && sDy!=-1){sDx=0;sDy=1;}
+        else if(direction=='A' && sDx!=1){sDx=-1;sDy=0;}
+        else if(direction=='D' && sDx!=-1){sDx=1;sDy=0;}
+        int tailX=snakeX[snakeLen-1],tailY=snakeY[snakeLen-1];
         for(int i = snakeLen - 1; i > 0; i--) { snakeX[i] = snakeX[i-1]; snakeY[i] = snakeY[i-1]; }
         snakeX[0] = (snakeX[0] + sDx + 16) % 16;
         snakeY[0] = (snakeY[0] + sDy + 16) % 16;
@@ -74,10 +99,11 @@ inline void runSnake() {
         if(snakeX[0] == foodX && snakeY[0] == foodY) {
             snakeScore++;
             if (snakeLen < 256) {
+                snakeX[snakeLen]=tailX;snakeY[snakeLen]=tailY;
                 snakeLen++;
             }
             snakeSpeed = max(80, 450 - (snakeScore * 15)); 
-            foodX = random(16); foodY = random(16);
+            if(!placeSnakeFood()){snakeStarted=false;currentMode=20;return;}
         }
     }
     FastLED.clear();

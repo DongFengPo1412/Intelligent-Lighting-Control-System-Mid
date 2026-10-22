@@ -12,7 +12,7 @@ Mid 是 **Basic → Mid → Pro** 三阶段项目的中阶课程原型，又名�
 
 ![课程样机的双 ESP32、扬声器与拼接灯板](docs/images/hardware_overview.jpg)
 
-图片记录课程时期的四块 8×8 拼接硬件，未完整展示 Jetson 节点。**当前仓库源码已改为单块 16×16 逐行蛇形映射；该改版尚无编译、烧录或实测记录，不能用旧图片证明改版已验证。** [版本与验证范围](docs/technical-notes.zh-CN.md#implementation-status)
+以此前课程四块8×8板的照片为历史硬件证据；当前源码为单块16×16逐行蛇形映射。WROOM修订版已完整编译，S3未完整构建，均未重新烧录或做面板实测。
 
 ## 系统架构
 
@@ -61,7 +61,7 @@ S3 承担语音客户端与播放音频分析，WROOM 承担像素显示、串�
 
 [观看课程演示视频](https://www.bilibili.com/video/BV192GR6kEHy)。图片与视频用于展示课程原型，不构成 FFT 延迟、视觉识别率或当前单块灯板改版的性能证明。视觉演示画面见[技术说明](docs/technical-notes.zh-CN.md#vision)。
 
-本次文档核验基于源码与已有材料，未连接硬件、重新训练、编译或烧录。没有可复核的时延／投递率／长期负载测试记录，因此不保留旧版的“60 FPS 硬实时”“100% 投递”和精确毫秒性能指标。串口静音帧、模式退出及游戏边界仍有[已知问题](docs/technical-notes.zh-CN.md#implementation-status)。
+本轮通过14组协议/游戏离线用例及WROOM完整构建。S3只完成源码检查，未做硬件、训练或端到端测试；历史演示不能替代修订版验收。
 
 ## 快速开始
 
@@ -81,3 +81,13 @@ S3 承担语音客户端与播放音频分析，WROOM 承担像素显示、串�
 [技术说明](docs/technical-notes.zh-CN.md) · [部署操作](docs/setup.zh-CN.md) · [Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic) · [Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)
 
 仓库采用 [MIT 许可证](LICENSE)。S3 工程保留小智客户端及其上游文档；ESP-DSP、ESP-SR、FastLED、Blinker、OpenCV、MediaPipe 等第三方组件保留各自许可。项目工作在于应用集成、控制协议、频谱显示、游戏与视觉事件联动，不把库算法本身归为自研。
+
+## 维护修订与验证
+
+2026-10 修复版：静音帧包含节拍与16频带，频谱严格校验字段数和范围，无效帧不刷新；超过500 ms没有有效帧后每30 ms继续衰减，零输入不再强制画底行。串口使用96字节固定缓存，超长帧丢弃至分隔符，模式只允许0–16、19–22，所有发送端必须以CR/LF结束。合法显式模式（包括0）可以立即退出音乐，不再由旧保护门丢弃。
+
+S3 GPIO17 TX→WROOM GPIO16 RX并共地；反向UART不使用，WROOM TX配置为-1，S3不分配GPIO18给RX。GPIO18留给灯控制器，不应再连接旧的WROOM→S3反向线。接线仍需按实际开发板确认。
+
+14组离线用例从实际协议头和游戏函数编译为WebAssembly并执行通过，覆盖模式、静音帧、畸形/越界/超长帧和游戏边界。S3固件未完整构建，未烧录、连接UART或重测历史演示；具体WROOM构建结果见维护报告。
+
+WROOM完整构建通过：Arduino ESP32 3.3.8、FastLED 3.9.15、Blinker 0.3.10230510、ArduinoJson 7.4.3；应用1348101字节，静态RAM60588字节。测试使用4 MiB Flash配置及官方 `min_spiffs` 分区（应用上限1966080字节），不代表已核验实际板载Flash。默认应用分区不足；烧录前必须确认硬件容量与分区。当前FastLED 3.10.5在本机触发编译器内部错误，3.9.15在隔离目录验证成功，全局库未改动。

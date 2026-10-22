@@ -17,7 +17,7 @@
 // --- 【新增】定义跨板异步通信的串口参数 ---
 #define S3_UART_NUM     UART_NUM_1       // 使用硬件串口 1
 #define S3_TXD_PIN      GPIO_NUM_17      // S3 发送脚，接 WROOM 的 RX (16)
-#define S3_RXD_PIN      GPIO_NUM_18      // S3 接收脚，接 WROOM 的 TX (17)
+#define S3_RXD_PIN      UART_PIN_NO_CHANGE      // Receive is unused; leave GPIO18 to LampController.
 #define UART_BUF_SIZE   (1024)           // 缓存大小
 
 /**
@@ -39,10 +39,11 @@ static void init_cross_board_uart()
     ESP_ERROR_CHECK(uart_driver_install(S3_UART_NUM, UART_BUF_SIZE * 2, UART_BUF_SIZE * 2, 0, NULL, 0));
     // 配置串口基础参数
     ESP_ERROR_CHECK(uart_param_config(S3_UART_NUM, &uart_config));
+    ESP_ERROR_CHECK(uart_disable_rx_intr(S3_UART_NUM));
     // 将物理引脚分配给 UART1 模块
     ESP_ERROR_CHECK(uart_set_pin(S3_UART_NUM, S3_TXD_PIN, S3_RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     
-    ESP_LOGI(TAG, "跨板异步通信串口 UART1 (GPIO 17/18) 初始化完成");
+    ESP_LOGI(TAG, "UART1 TX GPIO17 initialized; reverse RX unused");
 }
 
 extern "C" void app_main(void)

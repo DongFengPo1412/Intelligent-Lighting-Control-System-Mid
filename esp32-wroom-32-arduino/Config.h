@@ -11,17 +11,11 @@
 #define BRIGHTNESS  30     // 初始亮度 (0-255)
 
 // --- 2. 跨板串口通信配置 (与 S3 对接) ---
-/**
- * 🌟【硬核物理引脚校准】：完全对齐你的最新连线拓扑
- * 你的连线：WROOM-32 的 RX2 (GPIO 16) <- 接 S3 的 17 (TX)
- * 你的连线：WROOM-32 的 TX2 (GPIO 17) -> 接 S3 的 18 (RX)
- * * 注意：由于你在硬件上使用的是 WROOM-32 的硬件串口 2 物理引脚，
- * 这里我们将 S3_RX 定为 16，S3_TX 定为 17。
- * 此时 LightSystem3.ino 中的 Serial1.begin(115200, SERIAL_8N1, S3_RX, S3_TX) 
- * 会通过内部矩阵，自动将底层的异步收发器无缝桥接到你的 RX2/TX2 物理线上，完美兼容！
- */
+// One-way link: S3 TX GPIO17 -> WROOM RX GPIO16, plus common ground.
+// Reverse transmission is unused. Do not connect WROOM GPIO17 to S3 GPIO18,
+// which the selected S3 board configuration reserves for the lamp output.
 #define S3_RX       16     // 对应 WROOM-32 的 RX2 接口
-#define S3_TX       17     // 对应 WROOM-32 的 TX2 接口
+#define S3_TX       (-1)   // Reverse TX is unused; do not wire it to S3 GPIO18 (lamp).
 
 // --- 3. NVIDIA Jetson Nano 串口通信配置 ---
 // 使用 GPIO 25 (RX) 和 GPIO 26 (TX) 进行杜邦线串口通信，以完全避开板载 USB 调试串口的电平冲突。

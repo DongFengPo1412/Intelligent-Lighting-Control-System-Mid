@@ -113,11 +113,11 @@ Examples: (0,0)→0, (15,0)→15, (0,1)→31, (15,1)→16. This does not match t
 | 16 | Yellow smile | Defined on WROOM; tool argument 16 becomes 15 on S3. |
 | 19/20 | Snake/score | E or tool 19; self-collision enters 20. |
 | 21/22 | Tetris/score | F or tool 21; spawn collision enters 22. |
-| 17/18, others | No defined effect | Not completed features; receiver lacks a strict mode whitelist. |
+| 17/18 | Unsupported | Rejected by the mode whitelist. |
 
 ### Game mechanics and limits
 
-Snake uses x/y arrays of length 256, starts at length 3, and updates using `millis()` with a 450 ms initial interval. Food adds one point; interval becomes `max(80,450-15*score)`. Head coordinates wrap modulo 16; body collision ends play. Direction callbacks reject an immediate reversal relative to current direction, but multiple inputs before one movement tick need testing. Food placement does not exclude the body, and growth does not explicitly copy the old tail into the new slot. Basic's food-exclusion implementation must not be attributed to Mid.
+Snake now selects food from bounded unoccupied cells, preserves the old tail when growing, and ends at full capacity. A direction request is applied once per tick and cannot reverse the last committed direction. The 450 ms initial/80 ms minimum intervals, two-digit display and Tetris rules remain; these fixes are not performance measurements.
 
 Tetris stores a 16×16 array and uses x=3..12 as a ten-column playfield with side walls. Seven shapes have four stored rotations. Collision checks horizontal bounds, floor, and settled cells. Initial drop interval is 800 ms; each cleared row adds one point and subtracts 30 ms, down to 100 ms. A cleared row is rechecked after shifting. W rotates, S moves down one cell, and A/D move sideways. Wall kicks, hard drop, and rotation interpolation are absent.
 
@@ -143,17 +143,17 @@ There is no `recognizer.update` or saved model, so this is not online incrementa
 
 ## Communication and mode arbitration
 
-S3 UART1/WROOM Serial1 and Jetson/WROOM Serial2 use 115200, 8N1. A mode frame is a decimal number plus newline; spectra use `f,beat,b0,...,b15\n`. There is no checksum, sequence number, ACK, or retransmission. Reverse pins are configured, but application heartbeat/status confirmation transmission is absent.
+S3 UART1/WROOM Serial1 and Jetson Serial2 use 115200 8N1. Modes are decimal plus CR/LF; spectra are `f,beat,b0,...,b15` plus CR/LF. Beat is 0/1 and bands are 0–15. State changes only after complete validation. There is no checksum, sequence, ACK or retransmission.
 
-Ordinary display submissions use `millis()-lastShow>30`. Music skips that gate and calls `FastLED.show()` per received spectrum packet. The loop services Blinker, S3, Jetson, and USB sequentially; hard real-time scheduling is not established.
+Ordinary display submissions retain the >30 ms gate. Spectrum rendering follows valid input and continues decaying after input stops. These are scheduling settings, not measured FPS or hard-real-time guarantees.
 
 | Path | Actual behavior | Limitation |
 | :--- | :--- | :--- |
-| S3 | CR/LF framing; mode 15 rejects other modes while the latest f stream is <1200 ms old. Zero may also be rejected for 4000 ms after a nonzero mode. | Path-specific protection; no 50 ms timeout; `toInt` can turn invalid text into zero. |
-| Jetson/USB | Digit checks; parsing on CR/LF or >50 ms after the last byte. | Timeout processes a partial frame rather than validating/discarding it; no music lock or legal-mode whitelist. |
+| S3 | Bounded frames, field/range and mode validation; explicit mode commands can exit music. | No hardware ACK or delivery-rate evidence. |
+| Jetson/USB | CR/LF is required; a 50 ms timeout no longer promotes partial input to a command. | Update older senders that omit newlines. |
 | Blinker | W/S/A/D control active games; E/F enter games. | E/F always reject in mode 15; no color picker, full effects menu, or music-exit button. |
 
-`String.reserve(128)` reserves capacity, not a fixed maximum length. Buffers can grow and PCM accumulation uses vector; zero allocation/fragmentation and industrial reliability are unsupported claims.
+A fixed 96-byte frame buffer replaces `String.reserve`; oversized frames are discarded. Temporary `String(line)`, audio vectors and third-party libraries may still allocate; zero-allocation operation is not claimed.
 
 With one-digit beat and bands 0–15, valid spectrum text occupies roughly 36–52 bytes. At 8N1/115200 its wire serialization is about 3.13–4.51 ms, excluding processing/queues; this is not measured end-to-end delay. FastLED's 5 V/1200 mA setting is an estimated software power budget, not measured current, a hardware current regulator, or supply rating.
 
@@ -161,19 +161,24 @@ With one-digit beat and bands 0–15, valid spectrum text occupies roughly 36–
 
 ## Validation scope, known issues, and further work
 
-This pass statically traced calls/configuration and compared files. No hardware, firmware build, training, or end-to-end test was performed. Historical videos, photographs, and guides contextualize the course prototype without validating every function of the current revision.
+Fourteen offline cases compile the real protocol header/game functions to WebAssembly and pass: modes, silence, malformed/range/overflow frames and game boundaries. S3 was not fully built and no flashing, UART connection or fresh demonstration test occurred; the maintenance report records the WROOM build outcome separately.
 
-| Issue | Source and impact | Status |
+| Area | Current implementation or limit | Validation boundary |
 | :--- | :--- | :--- |
-| Short silence frame | The literal in `audio_service.cc` has only sixteen integers; the receiver requires seventeen, retaining and rendering old bands. | Statically confirmed; correction and hardware test pending. |
-| Unchecked band range | Parsed heights are stored directly and drive render-loop length; malformed frames can cause excessive work or repeated bottom-row drawing. | No fault-injection test. |
-| Unsynchronized music exit | S3 can disable analysis while WROOM rejects the switch within 1.2 s; no automatic resend/standby timeout. | Integration test needed; decay also stops when frames stop. |
-| Single-panel revision | `f9419ba` publishes an unvalidated mapping change; course images show tiled hardware. | Not built/flashed/hardware-tested. |
-| Old configuration template | Replacing `Config.h` with `Config.example.h` loses current mapping and power definitions. | Create only the private credential file as documented. |
-| S3 pin reuse | Local `bread-compact-wifi` config assigns GPIO18 to both UART RX and a `LampController` output. | Resolve against the actual board before testing; source unchanged in this pass. |
-| Dependencies/assets | Manifest now requires IDF>=5.5.2, versus old 5.4 wording; sdkconfig, lock, and managed_components are untracked. | A clean-clone build is not guaranteed. |
-| Game/vision edges | Food overlap, new tail slot, rapid turning, two-digit score, shared camera/serial resources. | Not presented as a complete stable product. |
+| Silence/bands | 17 values; beat 0/1, bands 0–15; malformed input rejected. | Offline protocol tests pass. |
+| Music exit/stale input | Explicit valid modes exit music; decay continues after 500 ms without input. | No board-to-board test. |
+| Pins | S3 TX17→WROOM RX16; reverse UART disabled. | Disconnect the old reverse wire; GPIO18 belongs to the lamp controller. |
+| Panel revision | Current single-panel mapping differs from historical tiled photographs. | No physical panel validation. |
+| S3 environment | IDF>=5.5.2; sdkconfig, lock and managed_components are untracked. | No full S3 build; clean-clone setup/assets remain required. |
+| Games | Food exclusion, old-tail growth, full board and turning fixed; scoring remains two-digit. | Fourteen protocol/game cases are not hardware acceptance. |
+| Vision | Scripts still share camera/serial; face samples/models are not distributed. | No unified arbitration or new recognition results. |
 
 Previous precise latency, 100% delivery, 0% accidental switching, endurance testing, electrical isolation, a rated 3 A supply, and nanosecond mapping lack reproducible records and are not claimed. Next steps are protocol/configuration fixes followed by recorded toolchain, panel version, input cases, timing, and recognition trials. Library capabilities are not project benchmarks.
 
 Course slides list Liu, Zhang, and Yang with broad roles; Bluetooth, enclosure, and module descriptions do not fully match the current implementation. This document covers team work, with individual module authorship still requiring confirmation. Third-party framework capabilities are not individual original research.
+
+The 2026-10 revision sends beat plus sixteen bands in silence frames and validates spectrum field count/ranges before updating. After 500 ms without a valid frame, decay continues every 30 ms; zero input no longer forces a lit bottom row. Serial reception uses a fixed 96-byte buffer, drops oversized frames through the delimiter, permits modes 0–16 and 19–22, and requires CR/LF from every sender. Explicit valid mode commands, including 0, can exit music immediately instead of being discarded by the old guard.
+
+Fourteen offline cases compile the real protocol header/game functions to WebAssembly and pass: modes, silence, malformed/range/overflow frames and game boundaries. S3 was not fully built and no flashing, UART connection or fresh demonstration test occurred; the maintenance report records the WROOM build outcome separately.
+
+The WROOM build passes with Arduino ESP32 3.3.8, FastLED 3.9.15, Blinker 0.3.10230510 and ArduinoJson 7.4.3: application 1348101 bytes, static RAM 60588 bytes. It uses a 4 MiB Flash configuration and the official `min_spiffs` partition (1966080-byte application limit), without verifying physical Flash capacity. The default app partition is too small; confirm hardware and partitioning before upload. FastLED 3.10.5 triggered a compiler internal error here; 3.9.15 passed in isolation without changing global libraries.

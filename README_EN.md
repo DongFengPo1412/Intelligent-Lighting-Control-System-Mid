@@ -12,7 +12,7 @@ Building on [Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Contr
 
 ![Course prototype with two ESP32 boards, speaker, and tiled panels](docs/images/hardware_overview.jpg)
 
-The photograph records the course hardware with four 8×8 panels and does not show the complete Jetson node. **Current repository source targets one row-serpentine 16×16 panel. That revision has no recorded build, flash, or hardware validation; historical photographs do not validate it.** [Version and validation scope](docs/technical-notes.en.md#implementation-status)
+The photograph documents historical four-panel hardware. Current source maps one row-serpentine 16×16 panel. The revised WROOM firmware has been built; S3 has not received a full build, and neither has been reflashed or tested on the panel.
 
 ## System architecture
 
@@ -61,7 +61,7 @@ Equations, band boundaries, game details, and protocol issues are in the [techni
 
 [Watch the course demonstration](https://www.bilibili.com/video/BV192GR6kEHy). These images and video illustrate the course prototype; they do not establish FFT latency, recognition accuracy, or performance of the current single-panel revision. Vision frames are included in the [technical notes](docs/technical-notes.en.md#vision).
 
-This documentation audit inspected source and existing materials without connecting hardware, retraining, building, or flashing. No reproducible latency/delivery/endurance benchmark was located, so the old “60 FPS hard real-time”, “100% delivery”, and precise millisecond results are not retained. Silence frames, mode exit, and game edge cases have [known issues](docs/technical-notes.en.md#implementation-status).
+Fourteen offline protocol/game cases and the complete WROOM build pass. S3 receives source inspection only. No hardware, training or end-to-end test occurred; historical demonstrations do not validate the maintenance revision.
 
 ## Quick start
 
@@ -81,3 +81,13 @@ Further work is to validate the single-panel revision, correct silence framing a
 [Technical notes](docs/technical-notes.en.md) · [Setup](docs/setup.en.md) · [Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic) · [Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)
 
 The repository uses the [MIT License](LICENSE). The S3 tree retains XiaoZhi client code and upstream documentation. ESP-DSP, ESP-SR, FastLED, Blinker, OpenCV, MediaPipe, and other dependencies retain their own licenses. Project work covers application integration, control protocols, spectrum rendering, games, and vision-triggered interaction; library algorithms are not presented as original project algorithms.
+
+## Maintenance and validation
+
+The 2026-10 revision sends beat plus sixteen bands in silence frames and validates spectrum field count/ranges before updating. After 500 ms without a valid frame, decay continues every 30 ms; zero input no longer forces a lit bottom row. Serial reception uses a fixed 96-byte buffer, drops oversized frames through the delimiter, permits modes 0–16 and 19–22, and requires CR/LF from every sender. Explicit valid mode commands, including 0, can exit music immediately instead of being discarded by the old guard.
+
+Connect S3 GPIO17 TX to WROOM GPIO16 RX with signal ground. Reverse UART is unused: WROOM TX is -1 and S3 does not assign GPIO18 to RX. GPIO18 remains available to the lamp controller; remove the old WROOM-to-S3 reverse wire. Confirm the actual board wiring before operation.
+
+Fourteen offline cases compile the real protocol header/game functions to WebAssembly and pass: modes, silence, malformed/range/overflow frames and game boundaries. S3 was not fully built and no flashing, UART connection or fresh demonstration test occurred; the maintenance report records the WROOM build outcome separately.
+
+The WROOM build passes with Arduino ESP32 3.3.8, FastLED 3.9.15, Blinker 0.3.10230510 and ArduinoJson 7.4.3: application 1348101 bytes, static RAM 60588 bytes. It uses a 4 MiB Flash configuration and the official `min_spiffs` partition (1966080-byte application limit), without verifying physical Flash capacity. The default app partition is too small; confirm hardware and partitioning before upload. FastLED 3.10.5 triggered a compiler internal error here; 3.9.15 passed in isolation without changing global libraries.

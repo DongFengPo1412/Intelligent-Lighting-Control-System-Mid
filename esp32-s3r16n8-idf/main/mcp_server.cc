@@ -156,6 +156,8 @@ void McpServer::AddCommonTools() {
                 mode = 15;
             }
 
+            if (!(mode >= 0 && (mode <= 16 || (mode >= 19 && mode <= 22))))
+                throw std::runtime_error("Unsupported display mode");
             auto& app = Application::GetInstance();
             app.Schedule([mode]() {
                 std::string cmd = std::to_string(mode) + "\n";

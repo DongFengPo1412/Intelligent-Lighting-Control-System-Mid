@@ -4,7 +4,7 @@
 
 [工程结构](#structure) · [硬件](#hardware) · [WROOM](#wroom) · [S3](#s3) · [Jetson](#jetson) · [操作检查](#operation) · [排查](#troubleshooting)
 
-先阅读[已知实现问题](technical-notes.zh-CN.md#implementation-status)。以下为按源码整理的复现步骤，本次没有执行固件编译、烧录或实机测试，不能视为已验证的一键部署方案。
+本轮通过14组协议/游戏离线用例及WROOM完整构建。S3只完成源码检查，未做硬件、训练或端到端测试；历史演示不能替代修订版验收。
 
 <a id="structure"></a>
 
@@ -54,7 +54,7 @@
 | 路径 | 源码引脚与设置 | 核对事项 |
 | :--- | :--- | :--- |
 | S3 → WROOM | S3 GPIO17 TX → WROOM GPIO16 RX；115200 8N1。 | `main.cc` 与 `Config.h`。 |
-| 预留反向 | WROOM GPIO17 TX → S3 GPIO18 RX。 | 没有应用 ACK；本地 S3 板型还把18用作灯输出，需解决复用。 |
+| UART | S3 GPIO17 TX→WROOM GPIO16 RX并共地；反向UART不使用，WROOM TX配置为-1，S3不分配GPIO18给RX。GPIO18留给灯控制器，不应再连接旧的WROOM→S3反向线。接线仍需按实际开发板确认。 | 115200 8N1 |
 | Jetson → WROOM | WROOM GPIO25 RX；配置注释标 Jetson J41 pin8 TX，反向 pin10 RX 接 WROOM GPIO26。 | 核实 Nano 载板版本、设备节点及引脚电平；共享信号地。 |
 | 灯板 | WROOM GPIO4 → DIN；WS2812B，GRB，256 灯，初始亮度30。 | 当前索引为单块16×16逐行蛇形，DIN按正视左上；历史4块版不能直接套用。 |
 | 音频／显示 | 按选定 S3 `boards/.../config.h`。 | 目录名不证明具体模组型号；核对麦克风、功放／扬声器、可选OLED及引脚。 |
@@ -66,7 +66,7 @@
 
 ## WROOM 构建配置
 
-使用 Arduino IDE 的 ESP32 支持和实际安装的 FastLED／Blinker。仓库未固定这三者的已验证版本，不把旧文档下限视为锁定环境。开发板、Flash容量、分区和下载速率按实体板选择。
+WROOM完整构建通过：Arduino ESP32 3.3.8、FastLED 3.9.15、Blinker 0.3.10230510、ArduinoJson 7.4.3；应用1348101字节，静态RAM60588字节。测试使用4 MiB Flash配置及官方 `min_spiffs` 分区（应用上限1966080字节），不代表已核验实际板载Flash。默认应用分区不足；烧录前必须确认硬件容量与分区。当前FastLED 3.10.5在本机触发编译器内部错误，3.9.15在隔离目录验证成功，全局库未改动。
 
 保留 [Config.h](../esp32-wroom-32-arduino/Config.h)，在同目录创建被 `.gitignore` 排除的 `Config.private.h`：
 
@@ -151,3 +151,15 @@ python3 run_gesture2.py
 | 人脸提示无数据／缺`cv2.face` | 提供本地样本并用contrib构建；核对100×100灰度裁剪及训练操作。 |
 | 相机／UART忙 | 不并行启动手与脸；检查摄像头0、服务占用、节点权限和公共地。 |
 | 语音能答但灯不变 | 区分服务端返回、MCP参数、UART实际输出、WROOM接收与保护逻辑，逐段检查。 |
+
+2026-10 修复版：静音帧包含节拍与16频带，频谱严格校验字段数和范围，无效帧不刷新；超过500 ms没有有效帧后每30 ms继续衰减，零输入不再强制画底行。串口使用96字节固定缓存，超长帧丢弃至分隔符，模式只允许0–16、19–22，所有发送端必须以CR/LF结束。合法显式模式（包括0）可以立即退出音乐，不再由旧保护门丢弃。
+
+S3 GPIO17 TX→WROOM GPIO16 RX并共地；反向UART不使用，WROOM TX配置为-1，S3不分配GPIO18给RX。GPIO18留给灯控制器，不应再连接旧的WROOM→S3反向线。接线仍需按实际开发板确认。
+
+WROOM完整构建通过：Arduino ESP32 3.3.8、FastLED 3.9.15、Blinker 0.3.10230510、ArduinoJson 7.4.3；应用1348101字节，静态RAM60588字节。测试使用4 MiB Flash配置及官方 `min_spiffs` 分区（应用上限1966080字节），不代表已核验实际板载Flash。默认应用分区不足；烧录前必须确认硬件容量与分区。当前FastLED 3.10.5在本机触发编译器内部错误，3.9.15在隔离目录验证成功，全局库未改动。
+
+先把 `$FastLedDir` 设为独立下载的官方FastLED 3.9.15绝对路径，`$BuildDir` 设为外部构建目录；安装并匹配上述平台/其他库。以下是编译配置，不执行上传；实际Flash容量需先确认。
+
+```powershell
+arduino-cli compile --fqbn "esp32:esp32:esp32:FlashSize=4M,PartitionScheme=min_spiffs" --library "$FastLedDir" --build-path "$BuildDir" esp32-wroom-32-arduino
+```

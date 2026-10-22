@@ -4,7 +4,7 @@
 
 [構成](#structure) · [ハードウェア](#hardware) · [WROOM](#wroom) · [S3](#s3) · [Jetson](#jetson) · [操作確認](#operation) · [問題の切分け](#troubleshooting)
 
-まず[既知の実装課題](technical-notes.ja.md#implementation-status)を参照してください。以下はソースに基づく再現手順で、今回ビルド・書込み・実機試験は実施しておらず、動作保証済みの自動導入ではありません。
+通信・ゲーム14組のオフライン検査とWROOM全体ビルドが通過しました。S3はソース確認のみです。実機・学習・全体経路の試験は行っておらず、過去デモは修正版の検証ではありません。
 
 <a id="structure"></a>
 
@@ -151,3 +151,15 @@ python3 run_gesture2.py
 | 顔データなし・`cv2.face`なし | ローカル画像とcontrib、100×100灰度、再学習操作。 |
 | カメラ／UART使用中 | 手と顔を別起動し、カメラ0、サービス、権限、共通GNDを確認。 |
 | 音声応答はあるが点灯なし | サーバー結果、MCP引数、UART送出、WROOM受信、抑制処理を個別に追跡。 |
+
+2026-10版では静音フレームをビート＋16帯域に修正し、項目数と範囲が正しい場合のみ更新します。有効フレームが500 ms途絶えると30 msごとに減衰し、ゼロ入力で最下行を強制点灯しません。シリアルは96バイト固定バッファ、過長フレームは区切りまで破棄、モードは0–16・19–22のみで、全送信元にCR/LFを要求します。0を含む明示的な有効モードで直ちに音楽を終了でき、旧ガードでは破棄しません。
+
+S3 GPIO17 TX→WROOM GPIO16 RXと共通GNDを使用します。逆方向UARTは未使用で、WROOM TXは-1、S3はGPIO18をRXに割り当てません。GPIO18はランプ用とし、旧WROOM→S3逆方向線は接続しません。実ボードの配線確認が必要です。
+
+WROOMはArduino ESP32 3.3.8、FastLED 3.9.15、Blinker 0.3.10230510、ArduinoJson 7.4.3でビルド成功しました。アプリ1348101バイト、静的RAM60588バイトです。4 MiB Flash設定と公式 `min_spiffs`（アプリ上限1966080バイト）を使用し、実Flash容量を検証したものではありません。既定領域では不足するため、書込前に実機容量・区画を確認します。本機ではFastLED 3.10.5がコンパイラ内部エラーになり、隔離3.9.15は成功しました。グローバルライブラリは変更していません。
+
+`$FastLedDir` を隔離した公式FastLED 3.9.15、`$BuildDir` を外部ビルド先の絶対パスに設定し、上記プラットフォーム・他ライブラリを準備します。次のコマンドはビルドのみで、書込前に実Flash容量の確認が必要です。
+
+```powershell
+arduino-cli compile --fqbn "esp32:esp32:esp32:FlashSize=4M,PartitionScheme=min_spiffs" --library "$FastLedDir" --build-path "$BuildDir" esp32-wroom-32-arduino
+```

@@ -392,7 +392,8 @@ if (!task->pcm.empty() && is_music_mode_) {
         float rms = sqrtf(sum_sq / FFT_SIZE);
 
         if (rms < 0.005f) {
-            uart_write_bytes(UART_NUM_1, "f,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n", 34);
+            static const char kSilenceFrame[] = "f,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n";
+            uart_write_bytes(UART_NUM_1, kSilenceFrame, sizeof(kSilenceFrame) - 1);
             fft_accum.clear();
             prev_low_energy = 0.0f;
             peak_tracker = 0.01f;

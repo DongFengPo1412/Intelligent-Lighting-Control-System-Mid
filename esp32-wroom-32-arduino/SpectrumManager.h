@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "Config.h"
+#include "Protocol.h"
 
 class SpectrumManager {
 private:
@@ -11,6 +12,7 @@ private:
     int _bands[16];
     float _fall_bands[16]; // 用于频谱平滑下落的重力滤波器
     int _is_beat;
+    unsigned long _last_feed = 0, _last_decay = 0;
 
     // 与普通绘图共用整板蛇形映射，避免频谱和游戏方向不一致。
     int getMatrixIndex(int x, int y) {
@@ -28,35 +30,27 @@ public:
     }
 
     // 核心流解析状态机：揉碎主板发来的 "f,beat,b0,b1..." 裸字符串
-    // 采用 sscanf 无分配就地解析，彻底消灭 String substring 产生的堆内存碎片
-    void parseSerialData(const String& cmd) {
-        if (!cmd.startsWith("f,")) return;
-        
-        int beat = 0;
-        int b[16] = {0};
-        int parsed = sscanf(cmd.c_str(), "f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                            &beat,
-                            &b[0], &b[1], &b[2], &b[3],
-                            &b[4], &b[5], &b[6], &b[7],
-                            &b[8], &b[9], &b[10], &b[11],
-                            &b[12], &b[13], &b[14], &b[15]);
-        
-        if (parsed == 17) {
-            _is_beat = beat;
-            for (int i = 0; i < 16; i++) {
-                _bands[i] = b[i];
-            }
+    // Validate a bounded packet; invalid input does not update state.
+    void reset() {
+        _is_beat=0;_last_feed=millis();_last_decay=_last_feed;
+        for(int i=0;i<16;++i){_bands[i]=0;_fall_bands[i]=0;}
+    }
+    bool parseSerialData(const String& cmd) {
+        int beat=0,b[16];
+        if (!LightingProtocol::ParseSpectrum(cmd.c_str(),beat,b))return false;
+        _last_feed=millis();_is_beat=beat;bool energy=false;
+        for(int i=0;i<16;++i){_bands[i]=b[i];energy=energy||b[i]>0;}
+        if (energy && _bands[0]<=1)_bands[0]=min(15,_bands[1]+1);
+        if (_is_beat==1)_bands[0]=15;
+        renderSpectrum();return true;
+    }
+    void tick() {
+        unsigned long now=millis();
+        if(now-_last_feed>500 && now-_last_decay>=30) {
+            _last_decay=now;_is_beat=0;
+            for(int i=0;i<16;++i)_bands[i]=0;
+            renderSpectrum();
         }
-        // 🌟【最左列低频实时补偿】：如果最左边一列因为主板直流分量过滤导致死区
-        // 我们让它动态影子克隆第 1 列的次低音震荡，同时在鼓点爆发(beat==1)时强行让它满格冲顶！
-        if (_bands[0] <= 1) {
-            _bands[0] = _bands[1] + 1; 
-        }
-        if (_is_beat == 1) {
-            _bands[0] = 15; // 鼓点来临，第 0 列作为低音重炮必须全满爆发
-        }
-        // 驱动渲染引擎刷新画面
-        renderSpectrum();
     }
 
     // 像素阵列图形渲染引擎
@@ -70,7 +64,7 @@ public:
             if ((float)_bands[x] >= _fall_bands[x]) {
                 _fall_bands[x] = (float)_bands[x]; // 上升瞬间响应
             } else {
-                // 采用“固定步长 + 比例衰减”的工业标准公式
+                // Empirical fixed-step and proportional decay.
                 // 这样当频谱在高位（比如15）时下落平滑优雅，跌到低位（低于3）时会加速坠落，瞬间砸向地面
                 _fall_bands[x] -= (0.4f + _fall_bands[x] * 0.05f); 
                 
@@ -83,6 +77,7 @@ public:
             }
 
             int current_height = (int)_fall_bands[x];
+            if (current_height <= 0) continue;
 
             // 3. 开始纵向绘制每一列的像素
             for (int y = 0; y <= current_height; y++) {
@@ -107,7 +102,7 @@ public:
             }
         }
 
-        // 🌟【硬件级动态功耗上限拦截盾】：统一使用 Config.h 中的安全功耗配置
+        // FastLED software power estimate; not a physical current regulator.
         FastLED.setMaxPowerInVoltsAndMilliamps(MAX_POWER_VOLTS, MAX_POWER_MA); 
 
         // 瞬间推向物理引脚发光！

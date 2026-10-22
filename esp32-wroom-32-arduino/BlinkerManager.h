@@ -33,7 +33,7 @@ extern BlinkerButton BtnF; // 快捷键：启动俄罗斯方块
  */
 inline void buttonW_callback(const String & s) {
     if (currentMode == 19 && snakeStarted) { 
-        if (sDy != 1) { sDx = 0; sDy = -1; } 
+        requestSnakeDirection('W');
     } 
     else if (currentMode == 21 && tetrisStarted) { 
         int nR = (pRot + 1) % 4;
@@ -46,7 +46,7 @@ inline void buttonW_callback(const String & s) {
  */
 inline void buttonS_callback(const String & s) {
     if (currentMode == 19 && snakeStarted) { 
-        if (sDy != -1) { sDx = 0; sDy = 1; }  
+        requestSnakeDirection('S');
     } 
     else if (currentMode == 21 && tetrisStarted) { 
         if (!checkTetCol(pType, pRot, pX, pY + 1)) pY++; 
@@ -58,7 +58,7 @@ inline void buttonS_callback(const String & s) {
  */
 inline void buttonA_callback(const String & s) {
     if (currentMode == 19 && snakeStarted) { 
-        if (sDx != 1) { sDx = -1; sDy = 0; } 
+        requestSnakeDirection('A');
     } 
     else if (currentMode == 21 && tetrisStarted) { 
         if (!checkTetCol(pType, pRot, pX - 1, pY)) pX--; 
@@ -70,7 +70,7 @@ inline void buttonA_callback(const String & s) {
  */
 inline void buttonD_callback(const String & s) {
     if (currentMode == 19 && snakeStarted) { 
-        if (sDx != -1) { sDx = 1; sDy = 0; }  
+        requestSnakeDirection('D');
     } 
     else if (currentMode == 21 && tetrisStarted) { 
         if (!checkTetCol(pType, pRot, pX + 1, pY)) pX++; 

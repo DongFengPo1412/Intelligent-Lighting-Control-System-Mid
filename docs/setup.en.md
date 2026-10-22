@@ -4,7 +4,7 @@
 
 [Structure](#structure) · [Hardware](#hardware) · [WROOM](#wroom) · [S3](#s3) · [Jetson](#jetson) · [Operation checks](#operation) · [Troubleshooting](#troubleshooting)
 
-Read the [known implementation issues](technical-notes.en.md#implementation-status) first. These source-derived reproduction steps were not executed as firmware builds, flashes, or hardware tests in this pass; they are not a validated one-command deployment.
+Fourteen offline protocol/game cases and the complete WROOM build pass. S3 receives source inspection only. No hardware, training or end-to-end test occurred; historical demonstrations do not validate the maintenance revision.
 
 <a id="structure"></a>
 
@@ -54,7 +54,7 @@ Braces denote three language files. `Config.private.h`, `sdkconfig`, `dependenci
 | Path | Source pins/settings | Checks |
 | :--- | :--- | :--- |
 | S3 → WROOM | S3 GPIO17 TX → WROOM GPIO16 RX; 115200 8N1. | `main.cc` and `Config.h`. |
-| Reserved reverse line | WROOM GPIO17 TX → S3 GPIO18 RX. | No application ACK; the local S3 board also uses 18 for a lamp output. Resolve pin reuse. |
+| UART | Connect S3 GPIO17 TX to WROOM GPIO16 RX with signal ground. Reverse UART is unused: WROOM TX is -1 and S3 does not assign GPIO18 to RX. GPIO18 remains available to the lamp controller; remove the old WROOM-to-S3 reverse wire. Confirm the actual board wiring before operation. | 115200 8N1 |
 | Jetson → WROOM | WROOM GPIO25 RX; config comments specify Jetson J41 pin8 TX, reverse pin10 RX to WROOM GPIO26. | Confirm Nano carrier, device node, and signal levels; share signal ground. |
 | Matrix | WROOM GPIO4 → DIN; WS2812B, GRB, 256 LEDs, initial brightness 30. | Current mapping: one 16×16 row-serpentine panel, front-view top-left DIN. Historical four-panel wiring differs. |
 | Audio/display | Selected S3 `boards/.../config.h`. | Directory names do not establish the module part number. Identify microphone, amplifier/speaker, optional OLED, and pins. |
@@ -66,7 +66,7 @@ Power devices according to their actual circuits and share the signal reference 
 
 ## WROOM build configuration
 
-Use Arduino IDE with ESP32 support and installed FastLED/Blinker libraries. Their validated versions are not pinned; old lower bounds are not an environment lock. Select board, Flash, partitions, and upload rate for the physical device.
+The WROOM build passes with Arduino ESP32 3.3.8, FastLED 3.9.15, Blinker 0.3.10230510 and ArduinoJson 7.4.3: application 1348101 bytes, static RAM 60588 bytes. It uses a 4 MiB Flash configuration and the official `min_spiffs` partition (1966080-byte application limit), without verifying physical Flash capacity. The default app partition is too small; confirm hardware and partitioning before upload. FastLED 3.10.5 triggered a compiler internal error here; 3.9.15 passed in isolation without changing global libraries.
 
 Keep [Config.h](../esp32-wroom-32-arduino/Config.h). Create a same-directory `Config.private.h`, excluded by `.gitignore`:
 
@@ -151,3 +151,15 @@ Record board, firmware commit, panel revision, toolchain, inputs, logs, and obse
 | No faces or missing `cv2.face` | Supply local images and a contrib build; verify 100×100 grayscale crops and retraining. |
 | Camera/UART busy | Run face/gesture separately; inspect camera 0, service ownership, permissions, and shared ground. |
 | Voice answers without light change | Trace server result, MCP arguments, UART output, WROOM receipt, and suppression logic separately. |
+
+The 2026-10 revision sends beat plus sixteen bands in silence frames and validates spectrum field count/ranges before updating. After 500 ms without a valid frame, decay continues every 30 ms; zero input no longer forces a lit bottom row. Serial reception uses a fixed 96-byte buffer, drops oversized frames through the delimiter, permits modes 0–16 and 19–22, and requires CR/LF from every sender. Explicit valid mode commands, including 0, can exit music immediately instead of being discarded by the old guard.
+
+Connect S3 GPIO17 TX to WROOM GPIO16 RX with signal ground. Reverse UART is unused: WROOM TX is -1 and S3 does not assign GPIO18 to RX. GPIO18 remains available to the lamp controller; remove the old WROOM-to-S3 reverse wire. Confirm the actual board wiring before operation.
+
+The WROOM build passes with Arduino ESP32 3.3.8, FastLED 3.9.15, Blinker 0.3.10230510 and ArduinoJson 7.4.3: application 1348101 bytes, static RAM 60588 bytes. It uses a 4 MiB Flash configuration and the official `min_spiffs` partition (1966080-byte application limit), without verifying physical Flash capacity. The default app partition is too small; confirm hardware and partitioning before upload. FastLED 3.10.5 triggered a compiler internal error here; 3.9.15 passed in isolation without changing global libraries.
+
+Set `$FastLedDir` to an isolated official FastLED 3.9.15 checkout and `$BuildDir` to an external build directory, both absolute paths; install the platform/other libraries listed above. The command only compiles. Confirm actual Flash capacity before upload.
+
+```powershell
+arduino-cli compile --fqbn "esp32:esp32:esp32:FlashSize=4M,PartitionScheme=min_spiffs" --library "$FastLedDir" --build-path "$BuildDir" esp32-wroom-32-arduino
+```
