@@ -1,9 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// --- 1. 16x16 灯光矩阵配置 ---
+#include "MatrixLayout.h"
+
+// --- 1. 单块 16x16 逐行蛇形灯光矩阵配置（左上角 DIN） ---
+#define MATRIX_WIDTH  MatrixLayout::kWidth
+#define MATRIX_HEIGHT MatrixLayout::kHeight
 #define LED_PIN     4      // WS2812B 数据信号线
-#define NUM_LEDS    256    // 灯珠总数
+#define NUM_LEDS    MatrixLayout::kPixelCount // 256 颗灯珠
 #define BRIGHTNESS  30     // 初始亮度 (0-255)
 
 // --- 2. 跨板串口通信配置 (与 S3 对接) ---

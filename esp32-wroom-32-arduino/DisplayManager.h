@@ -18,14 +18,11 @@ const uint8_t PROGMEM numFont[10][5] = {
 // 🌟🌟🌟【黄金加固】：将所有的普通全局函数一律升级为 static 声明，彻底绝杀多重定义编译报错 🌟🌟🌟
 
 /**
- * @brief 坐标映射核心：适配 4 块 8x8 纯直连拼接布局的 16x16 矩阵
- * 像素探针已实锤验证：内部走线完美对齐直连公式
+ * @brief 单块 16x16 逐行蛇形矩阵：左上角起，首行向右、次行向左。
  */
 static void drawPixel(int x, int y, CRGB color) {
-    if (x < 0 || x >= 16 || y < 0 || y >= 16) return;
-    
-    int blockID = (y / 8) * 2 + (x / 8); 
-    int index = blockID * 64 + (y % 8) * 8 + (x % 8);
+    int index = MatrixLayout::PixelIndex(x, y);
+    if (index < 0) return;
     leds[index] = color;
 }
 

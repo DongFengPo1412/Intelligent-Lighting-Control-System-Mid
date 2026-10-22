@@ -5,7 +5,7 @@
 #include "DisplayManager.h"
 #include "GameEngine.h"
 #include "BlinkerManager.h"
-#include "SpectrumManager.h" // 🌟【更新】：引入 4块 8x8 纯直连拼接音律管理器
+#include "SpectrumManager.h" // 单块 16x16 蛇形矩阵音律管理器
 
 // --- 全局变量定义 ---
 CRGB leds[NUM_LEDS];          

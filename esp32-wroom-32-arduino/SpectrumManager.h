@@ -5,11 +5,6 @@
 #include <FastLED.h>
 #include "Config.h"
 
-// 宏观整个复合大矩阵的尺寸
-#define MATRIX_WIDTH  16
-#define MATRIX_HEIGHT 16
-#define NUM_LEDS      256
-
 class SpectrumManager {
 private:
     CRGB* _leds;
@@ -17,13 +12,9 @@ private:
     float _fall_bands[16]; // 用于频谱平滑下落的重力滤波器
     int _is_beat;
 
-    // 精准适配 4 块 8x8 纯直连拼接布局的物理索引解算器
+    // 与普通绘图共用整板蛇形映射，避免频谱和游戏方向不一致。
     int getMatrixIndex(int x, int y) {
-        if (x < 0 || x >= MATRIX_WIDTH || y < 0 || y >= MATRIX_HEIGHT) return 0;
-        int panelRow = y / 8;
-        int panelCol = x / 8;
-        int base_index = (panelRow * 2 + panelCol) * 64;
-        return base_index + (y % 8) * 8 + (x % 8);
+        return MatrixLayout::PixelIndex(x, y);
     }
 
 public:
@@ -96,16 +87,16 @@ public:
             // 3. 开始纵向绘制每一列的像素
             for (int y = 0; y <= current_height; y++) {
                 // 🌟【核心世界线修正】：利用 15 - y 倒算物理硬件索引！
-                // 使得数据从最底部的 3、4号面板（y=0时映射到硬件第15行）开始向上蔓延成长
+                // 从整板最底行（物理 y=15）开始向上生长。
                 int target_physical_y = 15 - y;
                 // 严密越界锁死：确保翻转后的物理 Y 轴安全落在 0~15 空间内
                 if (target_physical_y < 0) target_physical_y = 0;
-                // 颜色渐变逻辑同步对齐：让暖色（红橙）留在底部 3、4号板，冷色（蓝紫）冲向顶部 1、2号板
+                // 颜色渐变继续从底部向顶部排列。
                 CHSV pixel_color = CHSV(y * 14 + 140, 245, 255);
 
                 // 传入翻转后的物理 Y 坐标，计算出正确的串联物理 LED 编号
                 int led_idx = getMatrixIndex(x, target_physical_y);
-                _leds[led_idx] = pixel_color;
+                if (led_idx >= 0) _leds[led_idx] = pixel_color;
             }
         }
 
