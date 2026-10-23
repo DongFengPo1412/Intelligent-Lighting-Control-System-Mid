@@ -49,7 +49,7 @@ The S3 handles the speech client and playback analysis; WROOM handles pixels, se
 - **Task allocation across nodes:** speech/playback analysis, vision, and display execution use separate processors connected by a text serial protocol, allowing input paths to be debugged independently.
 - **Shared coordinate mapping:** drawing and spectrum output use `MatrixLayout::PixelIndex`, currently computing alternating row directions on one 16×16 panel.
 - **Audio-to-display path:** the S3 sends `f,beat,b0,...,b15`. WROOM parses and refreshes spectra immediately; ordinary modes submit display updates from the loop at intervals greater than 30 ms.
-- **Mode conflict handling:** S3 input applies a 1.2 s stream-protection window, and phone game launchers are blocked during music mode. Jetson/USB inputs bypass that protection, so it is not global mutual exclusion.
+- **Mode conflict handling:** complete valid UART mode commands from S3, Jetson or USB can switch immediately, including leaving music; the old 1.2 s UART guard is gone. Blinker E/F game launchers still reject mode 15, so arbitration remains input-specific.
 
 Equations, band boundaries, game details, and protocol issues are in the [technical notes](docs/technical-notes.en.md). Deployment and feature checks are in the [operation guide](docs/setup.en.md).
 
@@ -76,7 +76,7 @@ Commands, configuration snippets, keys, and prerequisites are in [setup and oper
 
 This is a team course project maintained by **Chaoran Liu / 刘超然**. Course slides list Liu, Zichen Zhang / 张子琛, and Like Yang / 杨立科, but do not establish individual authorship of each module. The software is not attributed entirely to one person.
 
-Further work is to validate the single-panel revision, correct silence framing and protocol checks, unify mode-exit policies, address game edge cases, and record toolchain versions and hardware tests. These remain tasks to complete.
+Next complete the S3 build, confirm physical Flash/partitioning, panel layout and UART wiring, and validate the different phone/UART switching policies. Silence frames, protocol validation and covered game boundaries are repaired; offline checks still do not replace hardware acceptance.
 
 [Technical notes](docs/technical-notes.en.md) · [Setup](docs/setup.en.md) · [Basic](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Basic) · [Pro](https://github.com/DongFengPo1412/Intelligent-Lighting-Control-System-Pro)
 
