@@ -100,7 +100,7 @@ idf.py -p COMx flash monitor
 
 Replace `COMx` with the actual port. `set-target` regenerates local configuration; back up existing configuration first. Select actual board, Flash/PSRAM, partitions, audio, language, and wake assets in menuconfig. The local snapshot uses `BREAD_COMPACT_WIFI`, 16 MB Flash, Octal PSRAM, and SSD1306 128×32. These choices do not identify every prototype or prove a commercial chip variant.
 
-That board maps microphone WS/SCK/DIN=4/5/6, speaker DOUT/BCLK/LRCK=7/15/16, and OLED SDA/SCL=41/42. These are S3 pins, distinct from equal-numbered WROOM pins. Resolve GPIO18 lamp/UART RX reuse first. For XiaoZhi Wi-Fi provisioning, activation, and server tool setup, see the [upstream guide](../esp32-s3r16n8-idf/README.md) and [protocol notes](../esp32-s3r16n8-idf/docs/mcp-protocol.md). Server credentials, model services, and media services are not supplied.
+That board maps microphone WS/SCK/DIN=4/5/6, speaker DOUT/BCLK/LRCK=7/15/16, and OLED SDA/SCL=41/42. These are S3 pins, distinct from equal-numbered WROOM pins. Reverse UART is unused in the current firmware; confirm the old WROOM-to-S3 GPIO18 wire has been removed, leaving GPIO18 for the lamp controller. For XiaoZhi Wi-Fi provisioning, activation, and server tool setup, see the [upstream guide](../esp32-s3r16n8-idf/README.md) and [protocol notes](../esp32-s3r16n8-idf/docs/mcp-protocol.md). Server credentials, model services, and media services are not supplied.
 
 <a id="jetson"></a>
 

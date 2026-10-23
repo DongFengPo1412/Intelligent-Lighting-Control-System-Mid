@@ -54,7 +54,7 @@
 | 経路 | ソースのピン・設定 | 確認事項 |
 | :--- | :--- | :--- |
 | S3 → WROOM | S3 GPIO17 TX → WROOM GPIO16 RX、115200 8N1。 | `main.cc`と`Config.h`。 |
-| 逆向きの予約線 | WROOM GPIO17 TX → S3 GPIO18 RX。 | アプリACKなし。ローカルS3設定では18がランプ出力と競合します。 |
+| UART | S3 GPIO17 TX → WROOM GPIO16 RXと共通GNDを使用。逆方向UARTは未使用で、WROOM TXは-1、S3はGPIO18をRXに割り当てません。 | GPIO18はランプ用です。旧WROOM→S3の逆方向線は接続せず、実ボードの配線を確認してください。 |
 | Jetson → WROOM | WROOM GPIO25 RX。設定コメントはJetson J41 pin8 TX、逆向きはpin10 RXとWROOM GPIO26。 | Nanoキャリア、デバイス名、信号レベルを確認し、信号GNDを共有。 |
 | パネル | WROOM GPIO4 → DIN、WS2812B、GRB、256灯、初期輝度30。 | 現行は1枚16×16蛇行で正面左上DIN。過去の4枚構成と異なります。 |
 | 音声・表示 | 選択したS3の`boards/.../config.h`。 | ディレクトリ名だけでモジュール型番は確定しません。マイク、アンプ／スピーカー、必要なOLEDとピンを確認。 |
@@ -100,7 +100,7 @@ idf.py -p COMx flash monitor
 
 `COMx`は実ポートに置換します。`set-target`はローカル設定を再生成するため、既存設定は先に保存します。menuconfigで実ボード、Flash/PSRAM、パーティション、音声、言語、ウェイク資源を選びます。現在のローカル設定は`BREAD_COMPACT_WIFI`、16MB Flash、Octal PSRAM、SSD1306 128×32ですが、全試作機への適合や商品型番の証明ではありません。
 
-この設定のマイクWS/SCK/DINは4/5/6、スピーカーDOUT/BCLK/LRCKは7/15/16、OLED SDA/SCLは41/42です。S3のピンであり、WROOMの同番号とは別ノードです。GPIO18のランプ出力とUART RXの競合を先に解消します。小智の配網・有効化・サーバーツールは[上流ガイド](../esp32-s3r16n8-idf/README_ja.md)と[プロトコル資料](../esp32-s3r16n8-idf/docs/mcp-protocol.md)を参照してください。サーバー認証情報、モデル・メディアサービスは同梱しません。
+この設定のマイクWS/SCK/DINは4/5/6、スピーカーDOUT/BCLK/LRCKは7/15/16、OLED SDA/SCLは41/42です。S3のピンであり、WROOMの同番号とは別ノードです。現行ファームウェアでは逆方向UARTを使用しません。旧WROOM→S3 GPIO18配線を取り外し、GPIO18はランプ制御用とします。小智の配網・有効化・サーバーツールは[上流ガイド](../esp32-s3r16n8-idf/README_ja.md)と[プロトコル資料](../esp32-s3r16n8-idf/docs/mcp-protocol.md)を参照してください。サーバー認証情報、モデル・メディアサービスは同梱しません。
 
 <a id="jetson"></a>
 

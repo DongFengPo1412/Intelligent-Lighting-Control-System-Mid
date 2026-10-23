@@ -100,7 +100,7 @@ idf.py -p COMx flash monitor
 
 `COMx`替换为实际串口；`set-target`会重新生成本地配置，已有配置须先备份。用menuconfig选择实际板型、Flash/PSRAM、分区、音频、语言与唤醒资源。当前本地快照是`BREAD_COMPACT_WIFI`、16MB Flash、Octal PSRAM、SSD1306 128×32，不保证这些选择对应所有样机，更不证明芯片商品型号。
 
-该板型配置为麦克风WS/SCK/DIN=4/5/6，扬声器DOUT/BCLK/LRCK=7/15/16，OLED SDA/SCL=41/42；数字属于S3，与WROOM的同号GPIO是不同节点。先解决GPIO18灯输出和UART RX复用。小智配网、激活和服务端工具配置见[S3上游文档](../esp32-s3r16n8-idf/README_zh.md)与[协议资料](../esp32-s3r16n8-idf/docs/mcp-protocol.md)。服务器凭证、模型／媒体服务不随本仓库提供。
+该板型配置为麦克风WS/SCK/DIN=4/5/6，扬声器DOUT/BCLK/LRCK=7/15/16，OLED SDA/SCL=41/42；数字属于S3，与WROOM的同号GPIO是不同节点。当前固件不使用反向UART；确认历史 WROOM→S3 GPIO18 接线已移除，GPIO18留给灯控制器。小智配网、激活和服务端工具配置见[S3上游文档](../esp32-s3r16n8-idf/README_zh.md)与[协议资料](../esp32-s3r16n8-idf/docs/mcp-protocol.md)。服务器凭证、模型／媒体服务不随本仓库提供。
 
 <a id="jetson"></a>
 
