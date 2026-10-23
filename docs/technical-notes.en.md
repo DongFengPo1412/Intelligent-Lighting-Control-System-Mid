@@ -21,9 +21,9 @@ These notes primarily follow current repository source. Course demonstrations, d
 | Games/phone | [GameEngine.h](../esp32-wroom-32-arduino/GameEngine.h), [BlinkerManager.h](../esp32-wroom-32-arduino/BlinkerManager.h) | Snake, Tetris, two-digit scores, six button callbacks. |
 | Vision | [run_gesture2.py](../jetson-nano-py36/run_gesture2.py), [face_system_cn.py](../jetson-nano-py36/face_system_cn.py) | Separate gesture and face-enrollment programs emitting UART mode numbers. |
 
-The audit baseline is local commit `f9419ba`, following the earlier remote `4dcabf9`. It changes panel mapping and adds `MatrixLayout.h`; it was initially local-only and has now been published with this documentation following owner approval. It remains unbuilt, unflashed, and hardware-unvalidated. Course photographs and the desktop `LightSystem3` copy use four 8×8 panels. This documentation describes the new mapping while identifying historical demonstrations separately.
+The maintained repository uses the single 16×16 mapping and includes protocol, silence-decay and game-boundary fixes. A complete WROOM build has passed; S3 has not been fully built, and neither maintained firmware has been reflashed or hardware-tested. Course photographs and the desktop LightSystem3 copy record the historical four-tile hardware and do not validate the single-panel revision.
 
-All five desktop `py36` scripts are byte-identical to the repository. WROOM files in older `LightSystem1/3` copies differ and are not used to overwrite this version. The S3 tree contains many upstream XiaoZhi boards/examples; their presence does not establish support on this prototype. Nested upstream READMEs do not define this project's complete deployment conditions.
+Reproduce each vision program from the current repository. Compare older py36 and LightSystem1/3 copies by version rather than using them to overwrite maintained files. The S3 tree includes upstream XiaoZhi boards/examples whose presence does not establish prototype support. Nested upstream READMEs do not replace this project’s deployment conditions.
 
 <a id="speech"></a>
 
@@ -33,7 +33,7 @@ All five desktop `py36` scripts are byte-identical to the repository. WROOM file
 
 The actual tool is `self.device.set_light_mode`, with integer `mode` in 0–22. Both 15 and 16 become WROOM mode 15; `Schedule` sends the newline-terminated number, and the tool sets `is_music_mode_`. The music branch returns instructions requesting server-side `%search_music`/`%play_music`; it is not a local music downloader and does not guarantee arbitrary song availability. Other modes disable S3 music analysis.
 
-WROOM mode 16 displays a yellow smile, but no automatic `16` transmission was found in the S3 wake path. Automatic matrix wake feedback is therefore not established. Arguments 17/18 are accepted by the tool but have no display implementation. Commented A2DP/`play_online_music` code is not a working Bluetooth speaker feature.
+WROOM mode 16 displays a yellow smile, but no automatic `16` transmission was found in the S3 wake path, so automatic matrix wake feedback is not established. The S3 tool maps arguments 15/16 to 15 and rejects 17/18; the receiver permits only 0–16 and 19–22. Commented A2DP/`play_online_music` code is not a working Bluetooth-speaker feature.
 
 On `tts stop`, non-manual sessions return to Listening; closing the audio channel returns to Idle. This client state flow is not permanent offline continuous recognition. Speech SDK, Opus, and MCP foundations are upstream work; project extensions mainly connect mode tools and playback analysis.
 
@@ -76,15 +76,15 @@ This is a heuristic low-frequency transient flag, not an evaluated beat/BPM/drum
 
 ### WROOM columns
 
-A valid frame requires beat plus sixteen bands after `f,`: seventeen integers. If column 0 is <=1, it becomes column 1 plus 1; beat=1 forces column 0 to 15. The display therefore includes visual compensation and is not a calibrated acoustic measurement.
+A valid frame requires beat plus sixteen bands after `f,`: seventeen integers. When any band is nonzero and column 0 is <=1, it becomes `min(15, column 1 + 1)`; beat=1 forces column 0 to 15. All-zero silence frames do not trigger this first-column compensation. These visual adjustments are not calibrated acoustic measurements.
 
-Rises immediately follow input. Falls apply a fixed-plus-proportional decrement **per packet render**:
+Rising values follow input immediately. Each render call applies fixed-step plus proportional decay to falling values; valid packets trigger rendering, and `tick()` continues it every 30 ms after 500 ms without input:
 
 ```math
 h_i'=\begin{cases}b_i,&b_i\ge h_i\\h_i-(0.4+0.05h_i),&b_i\lt h_i\end{cases}
 ```
 
-In the falling branch, if h_i'<b_i+0.2 and b_i<=2, the result becomes b_i, not necessarily zero, then is bounded below by zero. There is no velocity state or time step: this is empirical decay smoothing rather than gravity/air-resistance simulation. Drawing uses `y=0..int(h_i)` and physical row `15-y`, so even zero draws a bottom pixel. Beats add `CRGB(0,25,25)`, a cyan component rather than white flashing.
+If h_i'<b_i+0.2 and b_i<=2, the falling branch sets the result to b_i, then clamps it to zero or above. There is no velocity state or time step: this is empirical decay smoothing. Only `current_height>0` draws `y=0..current_height` at physical row `15-y`; zero height does not force a bottom pixel, while previous pixels fade progressively. Beats add the cyan component `CRGB(0,25,25)`, not white.
 
 <a id="display-games"></a>
 
@@ -104,16 +104,16 @@ Examples: (0,0)→0, (15,0)→15, (0,1)→31, (15,1)→16. This does not match t
 
 | ID | Action | Entry and scope |
 | :--- | :--- | :--- |
-| 0 | Clear/standby | Serial or voice tool; S3 reset suppression may temporarily reject it. |
+| 0 | Clear/standby | A complete valid serial/tool command exits music immediately; the old UART guard no longer rejects it. |
 | 1/2/3 | Red/blue/green | Serial/tool; faces send only 1/2. |
 | 4/5/6/7 | Rainbow/breathing/meteor/stars | Gestures target 5/6/7; effects use FastLED helpers. |
 | 8/9/10 | Color wash/random rain/radial ripple | 8 uses uniform HSV, 9 random pixels; only 10 computes radial distance. |
 | 11/12/13/14 | Smile/sad/neutral/alternating face | Circular outline and fixed eye/mouth pixels; 14 alternates smile/sad with hue. |
-| 15 | Spectrum | Refreshed by spectrum packets; sending 15 alone creates no audio. |
+| 15 | Spectrum | Valid packets drive rendering; stale input decays on a timer. Sending 15 alone creates no audio. |
 | 16 | Yellow smile | Defined on WROOM; tool argument 16 becomes 15 on S3. |
 | 19/20 | Snake/score | E or tool 19; self-collision enters 20. |
 | 21/22 | Tetris/score | F or tool 21; spawn collision enters 22. |
-| 17/18 | Unsupported | Rejected by the mode whitelist. |
+| 17/18 and others | Unsupported/rejected | The receiver whitelist permits only 0–16 and 19–22; these are not implemented display modes. |
 
 ### Game mechanics and limits
 
@@ -161,7 +161,7 @@ With one-digit beat and bands 0–15, valid spectrum text occupies roughly 36–
 
 ## Validation scope, known issues, and further work
 
-Fourteen offline cases compile the real protocol header/game functions to WebAssembly and pass: modes, silence, malformed/range/overflow frames and game boundaries. S3 was not fully built and no flashing, UART connection or fresh demonstration test occurred; the maintenance report records the WROOM build outcome separately.
+Static call/configuration/version checks, fourteen offline protocol/game cases and a complete WROOM build have passed. S3 has not been fully built; no reflashing, model training or end-to-end hardware test was performed. Historical demonstrations do not validate the current revision.
 
 | Area | Current implementation or limit | Validation boundary |
 | :--- | :--- | :--- |
@@ -173,7 +173,7 @@ Fourteen offline cases compile the real protocol header/game functions to WebAss
 | Games | Food exclusion, old-tail growth, full board and turning fixed; scoring remains two-digit. | Fourteen protocol/game cases are not hardware acceptance. |
 | Vision | Scripts still share camera/serial; face samples/models are not distributed. | No unified arbitration or new recognition results. |
 
-Previous precise latency, 100% delivery, 0% accidental switching, endurance testing, electrical isolation, a rated 3 A supply, and nanosecond mapping lack reproducible records and are not claimed. Next steps are protocol/configuration fixes followed by recorded toolchain, panel version, input cases, timing, and recognition trials. Library capabilities are not project benchmarks.
+Previous precise latency, 100% delivery, 0% accidental switching, endurance testing, electrical isolation, a rated 3 A supply and nanosecond mapping lack reproducible records and are not claimed. Next steps are the S3 build and actual board configuration, followed by recorded panel version, UART wiring, input cases, timing and recognition trials. Library capabilities are not project benchmarks.
 
 Course slides list Liu, Zhang, and Yang with broad roles; Bluetooth, enclosure, and module descriptions do not fully match the current implementation. This document covers team work, with individual module authorship still requiring confirmation. Third-party framework capabilities are not individual original research.
 
