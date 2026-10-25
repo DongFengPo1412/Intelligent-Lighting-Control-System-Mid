@@ -2,7 +2,7 @@
 
 2台のESP32、Jetson Nano、オンライン音声対話、再生音の周波数解析を組み合わせた照明操作の試作機です。
 
-[简体中文](README.md) · [English](README_EN.md) · **日本語**
+[简体中文](README_ZH.md) · [English](README.md) · **日本語**
 
 **詳細：** [モジュールと版](docs/technical-notes.ja.md#source-map) · [音声処理](docs/technical-notes.ja.md#audio) · [描画とゲーム](docs/technical-notes.ja.md#display-games) · [視覚操作](docs/technical-notes.ja.md#vision) · [導入と操作](docs/setup.ja.md)
 
